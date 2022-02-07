@@ -46,6 +46,7 @@ namespace torali {
     int32_t ciendlow;
     int32_t ciendhigh;
     int32_t srSupport;
+    std::set<std::string> srReadnames;
     int32_t srMapQuality;
     int32_t mapq;
     int32_t insLen;
@@ -53,6 +54,7 @@ namespace torali {
     int32_t id;
     int32_t homLen;
     int32_t peSupport;
+    std::set<std::string> peReadnames;
     int32_t peMapQuality;
     float srAlignQuality;
     bool precise;

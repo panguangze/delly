@@ -30,6 +30,7 @@ namespace torali
     int32_t inslen;
     int32_t svid;
     std::size_t id;
+    std::string qname;
         
     SRBamRecord(int32_t const c, int32_t const p, int32_t const c2, int32_t const p2, int32_t const rst, int32_t const sst, int32_t const qval, int32_t const il, std::size_t const idval) : chr(c), pos(p), chr2(c2), pos2(p2), rstart(rst), sstart(sst), qual(qval), inslen(il), svid(-1), id(idval) {}
   };

@@ -33,8 +33,8 @@ namespace torali
     int32_t maxNormalISize;
     uint32_t flag;
     uint8_t MapQuality;
-  
-    BamAlignRecord(bam1_t* rec, uint8_t pairQuality, uint16_t a, uint16_t ma, int32_t median, int32_t mad, int32_t maxISize) : tid(rec->core.tid), pos(rec->core.pos), mtid(rec->core.mtid), mpos(rec->core.mpos), alen(a), malen(ma), Median(median), Mad(mad), maxNormalISize(maxISize), flag(rec->core.flag), MapQuality(pairQuality) {}
+    std::string qname;
+    BamAlignRecord(bam1_t* rec, uint8_t pairQuality, uint16_t a, uint16_t ma, int32_t median, int32_t mad, int32_t maxISize) : tid(rec->core.tid), pos(rec->core.pos), mtid(rec->core.mtid), mpos(rec->core.mpos), alen(a), malen(ma), Median(median), Mad(mad), maxNormalISize(maxISize), flag(rec->core.flag), MapQuality(pairQuality) {qname = bam_get_qname(rec);}
   };
 
   // Sort reduced bam alignment records
@@ -239,6 +239,8 @@ namespace torali
       // Initialize clique
       clique.insert(itWEdge->source);
       seeds.insert(br[itWEdge->source].id);
+      std::set<std::string> readNames;
+//      readNames.insert(br[itWEdge->source].qname);
       int32_t chr = br[itWEdge->source].chr;
       int32_t chr2 = br[itWEdge->source].chr2;
       int32_t ciposlow = br[itWEdge->source].pos;
@@ -272,6 +274,7 @@ namespace torali
 	  if (cliqueGrow) {
 	    // Accept new vertex
 	    clique.insert(v);
+//        readNames.insert(br[v].qname);
 	    seeds.insert(br[v].id);
 	    ciposlow = newCiPosLow;
 	    pos += br[v].pos;
@@ -437,6 +440,8 @@ namespace torali
       int32_t svStart = -1;
       int32_t svEnd = -1;
       int32_t wiggle = 0;
+      std::set<std::string> readNames;
+      readNames.insert(bamRecord[itWEdge->source].qname);
       int32_t clusterRefID=bamRecord[itWEdge->source].tid;
       int32_t clusterMateRefID=bamRecord[itWEdge->source].mtid;
       _initClique(bamRecord[itWEdge->source], svStart, svEnd, wiggle, svt);
@@ -455,7 +460,7 @@ namespace torali
 	  else continue;
 	  if (incompatible.find(v) != incompatible.end()) continue;
 	  cliqueGrow = _updateClique(bamRecord[v], svStart, svEnd, wiggle, svt);
-	  if (cliqueGrow) clique.insert(v);
+	  if (cliqueGrow) {clique.insert(v); readNames.insert(bamRecord[v].qname);}
 	  else incompatible.insert(v);
 	}
       }
@@ -468,6 +473,7 @@ namespace torali
 	svRec.svStart = (uint32_t) svStart + 1;
 	svRec.svEnd = (uint32_t) svEnd + 1;
 	svRec.peSupport = clique.size();
+    svRec.peReadnames = readNames;
 	int32_t ci_wiggle = std::max(abs(wiggle), 50);
 	svRec.ciposlow = -ci_wiggle;
 	svRec.ciposhigh = ci_wiggle;

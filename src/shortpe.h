@@ -67,7 +67,9 @@ namespace torali
 
     // Reads per SV
     typedef std::set<std::string> TSequences;
+	typedef std::set<std::string> TReadnames;
     typedef std::vector<TSequences> TSVSequences;
+	typedef std::vector<TReadnames> TSVReadnames;
     TSVSequences traStore(svs.size(), TSequences());
     uint32_t maxReadPerSV = 20;
     typedef std::vector<uint8_t> TQualities;
@@ -98,6 +100,8 @@ namespace torali
       // Sequences
       TSVSequences seqStore(svs.size(), TSequences());
       TQualVectors qualStore(svs.size(), TQualities());
+	  // Read names
+	  TSVReadnames readStore(svs.size(), TReadnames());
       
       // Collect reads from all samples
       for(unsigned int file_c = 0; file_c < c.files.size(); ++file_c) {
@@ -111,6 +115,7 @@ namespace torali
 	    if (!hits[rec->core.pos]) continue;
 
 	    // Valid split-read
+		std::string qname = bam_get_qname(rec);
 	    std::size_t seed = hash_string(bam_get_qname(rec));
 	    typename TPosReadSV::const_iterator it = srStore[refIndex].find(std::make_pair(rec->core.pos, seed));
 	    if (it != srStore[refIndex].end()) {
@@ -142,8 +147,8 @@ namespace torali
 		// At most n split-reads
 		if (seqStore[svid].size() < maxReadPerSV) {
 		  bool insertSuccess = false;
-		  if (_translocation(svs[svid].svt)) insertSuccess = traStore[svid].insert(sequence).second;
-		  else insertSuccess = seqStore[svid].insert(sequence).second;
+		  if (_translocation(svs[svid].svt)) {insertSuccess = traStore[svid].insert(sequence).second;}
+		  else  {insertSuccess = seqStore[svid].insert(sequence).second; readStore[svid].insert(qname);}
 		  // Store qualities
 		  if (insertSuccess) {
 		    if (_translocation(svs[svid].svt)) traQualStore[svid].push_back(rec->core.qual);
@@ -179,6 +184,7 @@ namespace torali
 	  svs[svid].mapq = 0;
 	  for(uint32_t i = 0; i < qualStore[svid].size(); ++i) svs[svid].mapq += qualStore[svid][i];
 	  svs[svid].srSupport = seqStore[svid].size();
+	  svs[svid].srReadnames = readStore[svid];
 	  svs[svid].srMapQuality = qualStore[svid][qualStore[svid].size()/2];
 	}
       }
@@ -536,6 +542,8 @@ namespace torali
 	      itOther->ciendhigh = sr[i].ciendhigh;
 	      itOther->srMapQuality = sr[i].srMapQuality;
 	      itOther->srSupport = sr[i].srSupport;
+          itOther->srReadnames = sr[i].srReadnames;
+//          itOther->peReadnames = sr[i].peReadnames;
 	      itOther->insLen = sr[i].insLen;
 	      itOther->homLen = sr[i].homLen;
 	      itOther->srAlignQuality = sr[i].srAlignQuality;

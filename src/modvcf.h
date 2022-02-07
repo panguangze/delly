@@ -5,6 +5,7 @@
 
 #include <htslib/sam.h>
 #include <htslib/vcf.h>
+#include <set>
 
 #include "bolog.h"
 
@@ -435,6 +436,7 @@ vcfOutput(TConfig const& c, std::vector<TStructuralVariantRecord> const& svs, TJ
   bcf_hdr_append(hdr, "##INFO=<ID=MAPQ,Number=1,Type=Integer,Description=\"Median mapping quality of paired-ends\">");
   bcf_hdr_append(hdr, "##INFO=<ID=SRMAPQ,Number=1,Type=Integer,Description=\"Median mapping quality of split-reads\">");
   bcf_hdr_append(hdr, "##INFO=<ID=SR,Number=1,Type=Integer,Description=\"Split-read support\">");
+  bcf_hdr_append(hdr, "##INFO=<ID=READNAMES,Number=1,Type=String,Description=\"Support read names\">");
   bcf_hdr_append(hdr, "##INFO=<ID=SRQ,Number=1,Type=Float,Description=\"Split-read consensus alignment quality\">");
   bcf_hdr_append(hdr, "##INFO=<ID=CONSENSUS,Number=1,Type=String,Description=\"Split-read consensus sequence\">");
   bcf_hdr_append(hdr, "##INFO=<ID=CE,Number=1,Type=Float,Description=\"Consensus sequence entropy\">");
@@ -550,6 +552,34 @@ vcfOutput(TConfig const& c, std::vector<TStructuralVariantRecord> const& svs, TJ
       std::string dellyVersion("EMBL.DELLYv");
       dellyVersion += dellyVersionNumber;
       bcf_update_info_string(hdr,rec, "SVMETHOD", dellyVersion.c_str());
+      std::string rnames;
+      for(auto &sr : svIter->srReadnames) {
+          rnames.append(sr);
+          rnames.append(",");
+      }
+      for(auto &pe : svIter->peReadnames) {
+          rnames.append(pe);
+          rnames.append(",");
+      }
+      rnames.pop_back();
+//      std::set<std::string>::iterator it;
+//      for(it = svIter->peReadnames.begin(); it != svIter->peReadnames.end();i++){
+//          rnames.append(*it);
+//          if (it++ != svIter->peReadnames.end()--) {
+//              rnames.append(",");
+//          }
+//      }
+//      rnames.append(svIter->srReadnames.last());
+//        for(auto &sr : svIter->peReadnames) {
+//            rnames.append(sr);
+//            if(sr.next() != sr.end()){
+//                rnames.append(",");
+//            }
+//        }
+//      std::string srnames = boost::algorithm::join(svIter->srReadnames);
+//      std::string penames = boost::algorithm::join(svIter->peReadnames);
+//      auto rnames = srnames.append(penames);
+        bcf_update_info_string(hdr, rec, "READNAMES", rnames.c_str());
       if (svIter->svt < DELLY_SVT_TRANS) {
 	tmpi = svEndPos;
 	bcf_update_info_int32(hdr, rec, "END", &tmpi, 1);
