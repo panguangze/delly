@@ -29,11 +29,11 @@
 #include <omp.h>
 #endif
 
-#include "tags.h"
-#include "coverage.h"
-#include "version.h"
-#include "util.h"
-#include "modvcf.h"
+#include "src/tags.h"
+#include "src/coverage.h"
+#include "src/version.h"
+#include "src/util.h"
+#include "src/modvcf.h"
 
 using namespace torali;
 

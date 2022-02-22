@@ -13,13 +13,13 @@
 #include "gperftools/profiler.h"
 #endif
 
-#include "version.h"
-#include "delly.h"
-#include "filter.h"
-#include "classify.h"
-#include "merge.h"
-#include "tegua.h"
-#include "coral.h"
+#include "src/version.h"
+#include "src/delly.h"
+#include "src/filter.h"
+#include "src/classify.h"
+#include "src/merge.h"
+#include "src/tegua.h"
+#include "src/coral.h"
 
 using namespace torali;
 
